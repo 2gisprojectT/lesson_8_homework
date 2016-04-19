@@ -4,6 +4,7 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
+
 class OttripTest(TestCase):
     def setUp(self):
         """
@@ -16,7 +17,7 @@ class OttripTest(TestCase):
         self.driver.get("http://www.onetwotrip.com/ru")
         self.driver.find_element_by_class_name("enter").click()
 
-    def test_forgot_password_non_existentEmail(self):
+    def test_forgot_password_non_existent_email(self):
         """
         Тест-кейс "Проверка вывода сообщения об ошибке при вводе несуществующего email в форме "забыли пароль""
         Шаги:
@@ -30,14 +31,15 @@ class OttripTest(TestCase):
         driver = self.driver
         driver.find_element_by_class_name("getNewPas").click()
         driver.find_element_by_id("input_remind_email").send_keys("llllll@mail.ru")
+
         button = driver.find_element_by_css_selector(
             "table.layout:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > button:nth-child(1)")
         button.click()
+
         error = driver.find_element_by_css_selector("#RemindAuth > div:nth-child(3)").text
         self.assertIn("Пользователя с таким email не существует", error)
-        driver.quit()
 
-    def test_forgot_password_correctEmail(self):
+    def test_forgot_password_correct_email(self):
         """
         Тест-кейс "Проверка вывода сообщения об отправке нового пароля на указанный email в форме "забыли пароль""
         Шаги:
@@ -50,13 +52,15 @@ class OttripTest(TestCase):
         driver = self.driver
         driver.find_element_by_class_name("getNewPas").click()
         driver.find_element_by_id("input_remind_email").send_keys("ld040994@mail.ru")
+
         button = driver.find_element_by_css_selector(
             "table.layout:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > button:nth-child(1)")
         button.click()
-        self.assertTrue(driver.find_element_by_class_name("smallText").is_displayed())
-        driver.quit()
 
-    def test_auth_incorrectLogin(self):
+        message = driver.find_element_by_class_name("smallText")
+        self.assertTrue(message.is_displayed())
+
+    def test_auth_incorrect_login(self):
         """
         Тест-кейс "Проверка вывода сообщения об ошибке при вводе неверного логина в форме авторизации"
         Шаги:
@@ -70,11 +74,11 @@ class OttripTest(TestCase):
         driver.find_element_by_id("input_auth_email").send_keys("l040994@mail.ru")
         driver.find_element_by_id("input_auth_pas").send_keys("040994alex")
         driver.find_element_by_class_name("pos_but").click()
-        error = driver.find_element_by_class_name("Error").text
-        self.assertIn("Неправильный пароль или почта",error)
-        driver.quit()
 
-    def test_auth_correctLoginAndPass(self):
+        error = driver.find_element_by_class_name("Error").text
+        self.assertIn("Неправильный пароль или почта", error)
+
+    def test_auth_correct(self):
         """
         Тест-кейс "Проверка ввода верного логина и пароля в форме авторизации"
         Шаги:
@@ -88,11 +92,11 @@ class OttripTest(TestCase):
         driver.find_element_by_id("input_auth_email").send_keys("ld040994@mail.ru")
         driver.find_element_by_id("input_auth_pas").send_keys("040994alex")
         driver.find_element_by_class_name("pos_but").click()
-        profile = driver.find_element_by_class_name("myprofile")
-        self.assertEqual(profile.text,"ld040994@mail.ru")
-        driver.quit()
 
-    def test_auth_Facebook(self):
+        profile = driver.find_element_by_class_name("myprofile")
+        self.assertEqual(profile.text, "ld040994@mail.ru")
+
+    def test_auth_facebook(self):
         """
         Тест-кейс "Проверка ввода верного логина и пароля в форме авторизации"
         Шаги:
@@ -103,15 +107,17 @@ class OttripTest(TestCase):
         Успешная авторизация (название кнопки "личный кабинет" заменяется название профиля)
         """
         driver = self.driver
-        driver.find_element_by_css_selector(".sLinks_inside > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1)").click()
+        driver.find_element_by_css_selector(
+            ".sLinks_inside > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1)").click()
         driver.switch_to.window(driver.window_handles[1])
+
         driver.find_element_by_id("email").send_keys("alexld45@mail.ru")
         driver.find_element_by_id("pass").send_keys("040994alex")
         driver.find_element_by_id("loginbutton").click()
         driver.switch_to.window(driver.window_handles[0])
+
         profile = driver.find_element_by_class_name("myprofile")
-        self.assertEqual(profile.text,"Алексей Демин")
-        driver.quit()
+        self.assertEqual(profile.text, "Алексей Демин")
 
     def TearDown(self):
         self.driver.quit()
