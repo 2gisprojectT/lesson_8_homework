@@ -25,13 +25,12 @@ class TestGmailAuth(TestCase):
         driver = self.driver
         email = driver.find_element_by_name("Email")
         email.send_keys("sndb11")
+        captcha = driver.find_element_by_id("identifier-captcha-input")
         startTime = time.time()
-        while (not driver.find_element_by_id("identifier-captcha-input").is_displayed()):
+        while ((not captcha.is_displayed()) and ((time.time() - startTime) < 2)):
             email.send_keys("a")
             email.submit()
-            if (time.time() - startTime) > 3:
-                break
-        self.assertTrue(driver.find_element_by_id("identifier-captcha-input").is_displayed())
+        self.assertTrue(captcha.is_displayed())
 
     def test_not_register_email(self):
         """
@@ -85,9 +84,7 @@ class TestGmailAuth(TestCase):
             """
         driver = self.driver
         email = driver.find_element_by_name("Email")
-        key = ""
-        for i in range(0, 201):
-            key = key + "a"
+        key = "a" * 201
         email.send_keys(key)
         email.submit()
         error = driver.find_element_by_css_selector(".has-error .error-msg").text
@@ -109,9 +106,7 @@ class TestGmailAuth(TestCase):
         email = driver.find_element_by_name("Email")
         email.send_keys("doctorvra4@gmail.com")
         email.submit()
-        key = ""
-        for i in range(0, 201):
-            key = key + "a"
+        key = "a" * 201
         passwd = self.driver.find_element_by_name("Passwd")
         passwd.send_keys(key)
         passwd.submit()
@@ -119,7 +114,7 @@ class TestGmailAuth(TestCase):
         self.assertEqual(error, "Должно быть не более 200 символов")
 
     def tearDown(self):
-        self.driver.close()
+        self.driver.quit()
 
 
 if __name__ == '__main__':
