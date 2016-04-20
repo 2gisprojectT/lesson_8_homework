@@ -3,7 +3,9 @@ import unittest
 import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 class OttripTest(TestCase):
     def setUp(self):
@@ -14,8 +16,12 @@ class OttripTest(TestCase):
         """
         self.driver = webdriver.Firefox()
         self.driver.maximize_window()
+        self.driver.implicitly_wait(20)
         self.driver.get("http://www.onetwotrip.com/ru")
         self.driver.find_element_by_class_name("enter").click()
+
+    def tearDown(self):
+        self.driver.quit()
 
     def test_forgot_password_non_existent_email(self):
         """
@@ -35,6 +41,8 @@ class OttripTest(TestCase):
         button = driver.find_element_by_css_selector(
             "table.layout:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > button:nth-child(1)")
         button.click()
+
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR,"#RemindAuth > div:nth-child(3)")))
 
         error = driver.find_element_by_css_selector("#RemindAuth > div:nth-child(3)").text
         self.assertIn("Пользователя с таким email не существует", error)
@@ -57,6 +65,8 @@ class OttripTest(TestCase):
             "table.layout:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > button:nth-child(1)")
         button.click()
 
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CLASS_NAME,"smallText")))
+
         message = driver.find_element_by_class_name("smallText")
         self.assertTrue(message.is_displayed())
 
@@ -75,8 +85,10 @@ class OttripTest(TestCase):
         driver.find_element_by_id("input_auth_pas").send_keys("040994alex")
         driver.find_element_by_class_name("pos_but").click()
 
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CLASS_NAME,"Error")))
+
         error = driver.find_element_by_class_name("Error").text
-        self.assertIn("Неправильный пароль или почта", error)
+        self.assertIn("Неправильный пароль или почта",error)
 
     def test_auth_correct(self):
         """
@@ -93,8 +105,10 @@ class OttripTest(TestCase):
         driver.find_element_by_id("input_auth_pas").send_keys("040994alex")
         driver.find_element_by_class_name("pos_but").click()
 
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CLASS_NAME,"myprofile")))
+
         profile = driver.find_element_by_class_name("myprofile")
-        self.assertEqual(profile.text, "ld040994@mail.ru")
+        self.assertEqual(profile.text,"ld040994@mail.ru")
 
     def test_auth_facebook(self):
         """
@@ -107,8 +121,7 @@ class OttripTest(TestCase):
         Успешная авторизация (название кнопки "личный кабинет" заменяется название профиля)
         """
         driver = self.driver
-        driver.find_element_by_css_selector(
-            ".sLinks_inside > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1)").click()
+        driver.find_element_by_css_selector(".sLinks_inside > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1)").click()
         driver.switch_to.window(driver.window_handles[1])
 
         driver.find_element_by_id("email").send_keys("alexld45@mail.ru")
@@ -116,11 +129,10 @@ class OttripTest(TestCase):
         driver.find_element_by_id("loginbutton").click()
         driver.switch_to.window(driver.window_handles[0])
 
-        profile = driver.find_element_by_class_name("myprofile")
-        self.assertEqual(profile.text, "Алексей Демин")
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CLASS_NAME,"myprofile")))
 
-    def TearDown(self):
-        self.driver.quit()
+        profile = driver.find_element_by_class_name("myprofile")
+        self.assertEqual(profile.text,"Алексей Демин")
 
 if __name__ == '__main__':
     unittest.main()
