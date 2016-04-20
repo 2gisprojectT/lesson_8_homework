@@ -1,12 +1,9 @@
 from unittest import TestCase
 from selenium import webdriver
 import time
-
-test1_data = ['Площадь Кирова', 'Версаль']
-test2_bad_data = ['алллаитл', 'лрдод']
-test3_data = ['Площадь Кирова', 'Версаль']
-test4_data = ['Виктора Уса 9', 'Телецентр Остановка']
-test5_data = ['Студенческая', 'Площадь Маркса']
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class FiveTestsCases(TestCase):
@@ -31,12 +28,12 @@ class FiveTestsCases(TestCase):
             Ожидаемый результат: Маршрут найден
         """
         from_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-2']/..//input[@class='suggest__input']")
-        from_field.send_keys(test1_data[0])
+        from_field.send_keys('Площадь Кирова')
         to_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-3']/..//input[@class='suggest__input']")
-        to_field.send_keys(test1_data[1])
+        to_field.send_keys('Версаль')
         to_field.submit()
         rout_list = self.driver.find_element_by_xpath("//div[@class='routeResults__wrap']")
-        self.assertTrue(test1_data[0] and test1_data[1] in rout_list.text)
+        self.assertTrue('Площадь Кирова' and 'Площадь Кирова' in rout_list.text)
 
     def test_search_bad_date_input(self):
         """Тест Кейс2:
@@ -53,9 +50,9 @@ class FiveTestsCases(TestCase):
             Появилась панель: “Увы, невозможно построить такой маршрут”
         """
         from_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-2']/..//input[@class='suggest__input']")
-        from_field.send_keys(test2_bad_data[0])
+        from_field.send_keys('алллаитл')
         to_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-3']/..//input[@class='suggest__input']")
-        to_field.send_keys(test2_bad_data[1])
+        to_field.send_keys('лрдод')
         to_field.submit()
         self.assertTrue(self.driver.find_element_by_xpath("//div[@class='noResults__scroller _scrollbar']"))
 
@@ -76,12 +73,11 @@ class FiveTestsCases(TestCase):
         """
         zoom_button = self.driver.find_element_by_xpath("//div[@class='zoom__eventArea zoom__inButton']")
         n = 0
-        time.sleep(1)
         while n < 5:
-            zoom_button.click()
             time.sleep(1)
-            n = n + 1
-        time.sleep(1)
+            zoom_button.click()
+            n += 1
+        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//img[@src='http://tile0.maps.2gis.com/tiles?x=47857&y=20719&z=16&v=1']")))
         from_field = self.driver.find_element_by_xpath("//img[@src='http://tile0.maps.2gis.com/tiles?x=47857&y=20719&z=16&v=1']")
         from_field.click()
         time.sleep(1)
@@ -109,12 +105,12 @@ class FiveTestsCases(TestCase):
         car_button = self.driver.find_element_by_xpath("//div[@class='searchBar__transportButton searchBar__transportCar']")
         car_button.click()
         from_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-2']/..//input[@class='suggest__input']")
-        from_field.send_keys(test4_data[0])
+        from_field.send_keys('Виктора Уса 9')
         to_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-3']/..//input[@class='suggest__input']")
-        to_field.send_keys(test4_data[1])
+        to_field.send_keys('Телецентр Остановка')
         to_field.submit()
         rout_list = self.driver.find_element_by_xpath("//div[@class='autoResults__wrap']")
-        self.assertTrue(test4_data[0] and test4_data[1] in rout_list.text)
+        self.assertTrue('Виктора Уса 9' and 'Телецентр Остановка' in rout_list.text)
 
     def test_search_subway_option(self):
         """Тест Кейс5:
@@ -134,13 +130,13 @@ class FiveTestsCases(TestCase):
         subway_button = self.driver.find_element_by_xpath("//div[@class='searchBar__transportButton searchBar__transportSubway']")
         subway_button.click()
         from_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-2']/..//input[@class='suggest__input']")
-        from_field.send_keys(test5_data[0])
+        from_field.send_keys('Студенческая')
         to_field = self.driver.find_element_by_xpath("//div[@id='module-1-1-3']/..//input[@class='suggest__input']")
-        to_field.send_keys(test5_data[1])
+        to_field.send_keys('Площадь Маркса')
         search_button = self.driver.find_element_by_xpath("//button[@class='searchBar__submit _rs']")
         search_button.click()
         rout_list = self.driver.find_element_by_xpath("//div[@class='routeResults__wrap']")
-        self.assertTrue(test5_data[0] and test5_data[1] in rout_list.text)
+        self.assertTrue('Студенческая' and 'Площадь Маркса' in rout_list.text)
 
     def tearDown(self):
         self.driver.quit()
