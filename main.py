@@ -1,8 +1,12 @@
 import time
 import unittest
+from threading import Thread
 from unittest import TestCase
+from selenium.webdriver.common.by import By
 
 from selenium import webdriver
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class TestGmailAuth(TestCase):
@@ -11,6 +15,11 @@ class TestGmailAuth(TestCase):
         self.driver.get("https://mail.google.com/")
         self.driver.implicitly_wait(5)
 
+    def wait_captcha_img(self, driver):
+        time.sleep(1)
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CLASS_NAME, 'captcha-box'))
+        )
     def test_email_captcha(self):
         """
         Название : Проверка появления поля капчи при вводе e-mail
@@ -25,13 +34,12 @@ class TestGmailAuth(TestCase):
         driver = self.driver
         email = driver.find_element_by_name("Email")
         email.send_keys("sndb11")
-        captcha = driver.find_element_by_id("identifier-captcha-input")
-        startTime = time.time()
-        while ((not captcha.is_displayed()) and ((time.time() - startTime) < 2)):
+        captcha = self.driver.find_element_by_id("captcha-img")
+        t1 = Thread(target=self.wait_captcha_img, args=(driver,))
+        t1.start()
+        while (not captcha.is_displayed()):
             email.send_keys("a")
             email.submit()
-        self.assertTrue(captcha.is_displayed())
-
     def test_not_register_email(self):
         """
             Название : Проверка появления сообщения: Не удалось распознать адрес электронной почты.
