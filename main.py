@@ -3,7 +3,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as WW
 from selenium.webdriver.support import expected_conditions as EC
-import time
 import unittest
 
 
@@ -16,14 +15,13 @@ class GmailSendingTests(unittest.TestCase):
         3) Нажать на кнопку "Написать"
         """
         self.driver = webdriver.Firefox()
+        self.driver.implicitly_wait(20)
         self.driver.get("https://mail.google.com")
-        email = self.driver.find_element_by_name("Email")
-        email.send_keys("arch.step.inc@gmail.com", Keys.RETURN)
-        passw = WW(self.driver, 10).until(EC.presence_of_element_located((By.ID, "Passwd")))
-        passw.send_keys("TestinG1234", Keys.RETURN)
-        WW(self.driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "z0"))).click()
+        self.driver.find_element_by_name("Email").send_keys("arch.step.inc@gmail.com", Keys.RETURN)
+        self.driver.find_element_by_id("Passwd").send_keys("TestinG1234", Keys.RETURN)
+        self.driver.find_element_by_class_name("z0").click()
 
-    def testAllFilledFields(self):
+    def test_all_filled_fields(self):
         """
         Шаги:
         1) Заполнить поле "Получатели" в формате: ____@____.____
@@ -33,13 +31,13 @@ class GmailSendingTests(unittest.TestCase):
         Ожидаемый результат:
         Форма отправки закроется, через некоторое время в центре экрана появится сообщение об успешной доставке
         """
-        WW(self.driver, 10).until(EC.presence_of_element_located((By.NAME, "to"))).send_keys("arch.step.inc@gmail.com ")
+        self.driver.find_element_by_name("to").send_keys("arch.step.inc@gmail.com ")
         self.driver.find_element_by_name("subjectbox").send_keys("Hello")
         self.driver.find_element_by_class_name("LW-avf").send_keys("Hello", Keys.TAB, Keys.ENTER)
-        mes = WW(self.driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "vh"),"Письмо отправлено. Просмотреть сообщение"))
+        mes = self.wait_text("vh", "Письмо отправлено. Просмотреть сообщение")
         self.assertTrue(mes)
 
-    def testNoTheme(self):
+    def test_no_theme(self):
         """
         Шаги:
         1) Заполнить поле "Получатели" в формате: ____@____.____
@@ -50,12 +48,12 @@ class GmailSendingTests(unittest.TestCase):
         Ожидаемый результат:
         Форма отправки закроется, через некоторое время в центре экрана появится сообщение об успешной доставке
         """
-        WW(self.driver, 10).until(EC.presence_of_element_located((By.NAME, "to"))).send_keys("arch.step.inc@gmail.com ")
+        self.driver.find_element_by_name("to").send_keys("arch.step.inc@gmail.com ")
         self.driver.find_element_by_class_name("LW-avf").send_keys("Hello", Keys.TAB, Keys.ENTER)
-        mes = WW(self.driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "vh"),"Письмо отправлено. Просмотреть сообщение"))
+        mes = self.wait_text("vh", "Письмо отправлено. Просмотреть сообщение")
         self.assertTrue(mes)
 
-    def testWrongDestination(self):
+    def test_wrong_destination(self):
         """
         Шаги:
         1) Поле "Получатели" заполнить текстом, не являющегося адресом
@@ -65,12 +63,12 @@ class GmailSendingTests(unittest.TestCase):
         Ожидаемый результат:
         Появится сообщение об ошибке
         """
-        WW(self.driver, 10).until(EC.presence_of_element_located((By.NAME, "to"))).send_keys("курлык")
+        self.driver.find_element_by_name("to").send_keys("курлык")
         self.driver.find_element_by_class_name("LW-avf").send_keys("Hello", Keys.TAB, Keys.ENTER)
-        mes = WW(self.driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "Kj-JD-Jz"), "Адрес курлык в поле Кому не распознан. Проверьте правильность ввода всех адресов."))
+        mes = self.wait_text("Kj-JD-Jz", "Адрес курлык в поле Кому не распознан. Проверьте правильность ввода всех адресов.")
         self.assertTrue(mes)
 
-    def testNoReceivers(self):
+    def test_no_receivers(self):
         """
         Шаги:
         1) Поле "Получатели" не заполнять
@@ -80,11 +78,11 @@ class GmailSendingTests(unittest.TestCase):
         Ожидаемый результат:
         Появится сообщение об ошибке
         """
-        WW(self.driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "LW-avf"))).send_keys("Hello", Keys.TAB, Keys.ENTER)
-        mes = WW(self.driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "Kj-JD-Jz"), "Укажите как минимум одного получателя."))
+        self.driver.find_element_by_class_name("LW-avf").send_keys("Hello", Keys.TAB, Keys.ENTER)
+        mes = self.wait_text("Kj-JD-Jz", "Укажите как минимум одного получателя.")
         self.assertTrue(mes)
 
-    def testDynamicSave(self):
+    def test_dynamic_save(self):
         """
         Шаги:
         1) Заполнить любое поле (можно одним символом)
@@ -93,14 +91,18 @@ class GmailSendingTests(unittest.TestCase):
         Ожидаемый результат:
         В нижней части формы отправки справа появится надпись: "Идет сохранение", а затем: "Сохранено".
         """
-        WW(self.driver, 10).until(EC.presence_of_element_located((By.NAME, "to"))).send_keys("a")
-        mes = WW(self.driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "aWQ"), "Идет сохранение"))
+        self.driver.find_element_by_name("to").send_keys("а")
+        mes = self.wait_text("aWQ", "Идет сохранение")
         self.assertTrue(mes)
-        mes = WW(self.driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "aWQ"), "Сохранено"))
+        mes = self.wait_text("aWQ", "Сохранено")
         self.assertTrue(mes)
+
+    def wait_text(self, name, text):
+        return WW(self.driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, name), text))
 
     def tearDown(self):
         self.driver.quit()
+
 
 
 if __name__ == "__main__":
